@@ -6,7 +6,6 @@ module Control.IO.Region
 (
   Region,
   Key,
-  NotFound(..),
   AlreadyClosed(..),
   AlreadyFreed(..),
   region,
