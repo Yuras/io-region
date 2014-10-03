@@ -1,22 +1,32 @@
 name:                io-region
 version:             0.0.1
--- synopsis:            
--- description:         
+synopsis:            Exception safe resource management with dynamic regions
 license:             BSD3
 license-file:        LICENSE
 author:              Yuras Shumovich
 maintainer:          shumovichy@gmail.com
--- copyright:           
+copyright:           Copyright (c) Yuras Shumovich 2014
+homepage:            https://github.com/Yuras/io-region/wiki
 category:            Control
 build-type:          Simple
--- extra-source-files:  
 cabal-version:       >=1.10
+description:
+  Region owns resources and automatically frees them on exit.
+  It is a plain old ADT, so it is possible to pass it to functions,
+  put into mutable references, store in regular data types.
+  .
+  Resources can be freed earler or transfered to other regions.
+  .
+  Region itself can be used as any other resource. E.g. it one region
+  can own other one.
+
+source-repository head
+  type:                git
+  location:            git@github.com/Yuras/io-region.git
 
 library
   exposed-modules:     Control.IO.Region
-  -- other-modules:       
-  -- other-extensions:    
-  build-depends:       base,
+  build-depends:       base >= 4.6 && < 5.0,
                        stm
   hs-source-dirs:      lib
   default-language:    Haskell2010
