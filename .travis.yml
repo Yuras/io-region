@@ -3,3 +3,12 @@ ghc:
   - 7.4
   - 7.6
   - 7.8
+script:
+  - if [ `ghc --numeric-version` = "7.8.3" ];
+    then cabal configure --enable-tests --enable-library-coverage && cabal build && cabal test;
+    else cabal configure --enable-tests && cabal build && cabal test;
+    fi
+after_success:
+  - if [ `ghc --numeric-version` = "7.8.3" ];
+    then cabal install codecov-haskell && codecov-haskell test;
+    fi
