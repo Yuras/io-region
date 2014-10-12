@@ -103,3 +103,11 @@ main = hspec $ do
       r' <- Region.open
       k' <- k `Region.moveTo` r'
       Region.free k'
+
+  describe "defer" $ do
+    it "should add the action to region to be called on close" $ do
+      ref <- liftIO $ newIORef False
+      liftIO $ region $ \r ->
+        void $ Region.defer r (writeIORef ref True)
+      res <- liftIO $ readIORef ref
+      res `shouldBe` True

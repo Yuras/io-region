@@ -15,7 +15,8 @@ module Control.IO.Region
   alloc_,
   free,
   moveToSTM,
-  moveTo
+  moveTo,
+  defer
 )
 where
 
@@ -148,6 +149,10 @@ moveToSTM k r = do
 -- | Move resource to other region. See also `moveToSTM`
 moveTo :: Key -> Region -> IO Key
 moveTo k = atomically . moveToSTM k
+
+-- | Defer action until region closed
+defer :: Region -> IO () -> IO ()
+defer r a = void $ alloc_ r (return $! ()) (const a)
 
 guardOpen :: Region -> STM ()
 guardOpen r = do
