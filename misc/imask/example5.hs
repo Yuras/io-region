@@ -45,7 +45,7 @@ hFlush :: Handle -> IO ()
 hFlush (Handle ref) = do
   val <- readIORef ref
   case val of
-    Just str' -> modifyIORef dataWritten (str' :)
+    Just str -> modifyIORef dataWritten (str :)
     _ -> return ()
   writeIORef ref Nothing
 

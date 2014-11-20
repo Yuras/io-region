@@ -6,6 +6,7 @@ import Control.Exception (SomeException)
 import qualified Control.Exception as E
 import System.IO.Unsafe (unsafePerformIO)
 
+{-# NOINLINE numHandles #-}
 numHandles :: IORef Int
 numHandles = unsafePerformIO $ newIORef 0
 
@@ -32,7 +33,7 @@ example :: IO ()
 example = do
   h <- openFile "path"
   hPutStr h "Hello"
-  --error "something went wrong"
+  error "something went wrong"
   hClose h
 
 main :: IO ()

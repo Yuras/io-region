@@ -52,7 +52,7 @@ hFlush :: Handle -> IO ()
 hFlush (Handle ref) = do
   val <- readIORef ref
   case val of
-    Just str' -> modifyIORef dataWritten (str' :)
+    Just str -> modifyIORef dataWritten (str :)
     _ -> return ()
   writeIORef ref Nothing
 
@@ -68,7 +68,7 @@ instance Exception Ex where
 
 -- disable async exceptions, but automatically interrupt any interruptible action
 --
--- pure man's implementation, requires support from RTS
+-- pure mans implementation, requires support from RTS
 -- it is even is not safe
 interruptibleMask :: IO a -> IO a
 interruptibleMask action = withMVar asyncLock $ \_ -> do
@@ -96,7 +96,7 @@ bracket allocate release use =
     return result
 
 example :: IO ()
-example = void $ timeout (1 * 1000 * 1000) $
+example = void $ timeout (2 * 1000 * 1000) $
   bracket (openFile "path") hClose $ \h -> do
     hPutStr h "Hello"
     hPutStr h "World"
@@ -106,6 +106,6 @@ main :: IO ()
 main = do
   pid <- myThreadId
   void $ forkIO $ do
-    threadDelay (2 * 1000 * 1000)
+    threadDelay (1 * 1000 * 1000)
     killThread pid
   test example
