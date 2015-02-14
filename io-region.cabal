@@ -1,5 +1,5 @@
 name:                io-region
-version:             0.0.1
+version:             0.1.0
 synopsis:            Exception safe resource management with dynamic regions
 license:             BSD3
 license-file:        LICENSE
