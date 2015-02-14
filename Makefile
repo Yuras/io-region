@@ -2,7 +2,9 @@
 all: build
 
 debug: clean
-	cabal configure --disable-library-profiling --disable-optimization --enable-executable-dynamic --enable-tests --enable-library-coverage --ghc-options="-Wall"
+	cabal configure --disable-library-profiling --disable-optimization \
+		--enable-executable-dynamic --enable-tests --enable-coverage \
+		--ghc-options="-Wall"
 
 release: clean
 	cabal configure

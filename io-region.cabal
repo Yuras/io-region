@@ -17,8 +17,10 @@ description:
   .
   Resources can be freed earler or transfered to other regions.
   .
-  Region itself can be used as any other resource. E.g. it one region
+  Region itself can be used as any other resource. E.g. one region
   can own other one.
+  .
+  The library doesn't pretend to solve double throw issue.
 
 source-repository head
   type:                git

@@ -1,6 +1,44 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
 -- | Exception safe resource management
+--
+-- Examples:
+--
+-- @
+-- import Control.IO.Region (region)
+-- import qualified Control.IO.Region as R
+--
+-- ...
+--   region $ \\r -> do
+--     resource <- R.alloc_ r allocate free
+--     use resource
+--     -- resource will be automatically freed here
+--
+-- ...
+--   region $ \\r -> do
+--     (resource, key) <- R.alloc r allocate free
+--     use resource
+--     if ...
+--       then R.free key  -- free it earler
+--       else use resource
+--
+-- ...
+--   region $ \\r1 -> do
+--     resource \<- region $ \\r2 -> do
+--       (resource1, key) <- R.alloc r2 allocate free
+--       use resource
+--       resource \`R.moveTo\` r1  -- transfer ownership to region r1
+--       return resource
+--     doSomethingElse resource
+--     -- resource will be freed here
+--
+-- ...
+--   region $ \\r1 -> do
+--     (r2, r2Key) <- R.alloc r1 R.open R.close  -- region is a resource too
+--     resource <- R.alloc r2 allocate free
+--     use resource
+--     r2Key \`R.moveTo\` r3  -- move region r2 ownership (and also the resource) to other region
+-- @
 
 module Control.IO.Region
 (
@@ -73,7 +111,11 @@ open = Region
 
 -- | Close the region. You probably should called it
 -- when async exceptions are masked. Prefer `region` function.
--- It is error to close region twice
+-- It is error to close region twice.
+--
+-- In case of exception inside any cleanup handler, other handlers will be
+-- called anyway. The last exception will be rethrown (that matches the
+-- behavior of `Control.Exception.bracket`.)
 close :: Region -> IO ()
 close r = do
   ress <- uninterruptibleMask_ $ atomically $ do
@@ -110,7 +152,7 @@ alloc r acquire cleanup = mask_ $ do
 alloc_ :: Region -> IO a -> (a -> IO ()) -> IO a
 alloc_ r a f = fst <$> alloc r a f
 
--- | Free the resource earler then it's region will be closed.
+-- | Free the resource earlier then it's region will be closed.
 -- It will be removed from the region immediately.
 -- It is error to free resource twice
 free :: Key -> IO ()
@@ -150,7 +192,7 @@ moveToSTM k r = do
 moveTo :: Key -> Region -> IO Key
 moveTo k = atomically . moveToSTM k
 
--- | Defer action until region closed
+-- | Defer action until region is closed
 defer :: Region -> IO () -> IO ()
 defer r a = void $ alloc_ r (return $! ()) (const a)
 
