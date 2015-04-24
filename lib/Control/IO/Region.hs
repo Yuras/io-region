@@ -58,11 +58,21 @@ module Control.IO.Region
 )
 where
 
+import Prelude (($!), Enum(..))
 import Data.Typeable
-import Control.Applicative
+import Data.Bool
+import Data.Int
+import Data.Eq
+import Data.Function
+import qualified Data.List as List
+import Data.Tuple
+import Data.Maybe
 import Control.Monad
+import Control.Applicative
 import Control.Exception
 import Control.Concurrent.STM
+import System.IO
+import Text.Show
 
 -- | Region owns resources and frees them on close
 data Region = Region {
@@ -125,7 +135,7 @@ close r = do
     writeTVar (closed r) True
     forM_ ress $ \(k, _) ->
       writeTVar (keyFreed k) True
-    return (map snd ress)
+    return (List.map snd ress)
   go ress
   where
   go [] = return $! ()
@@ -159,11 +169,11 @@ free :: Key -> IO ()
 free k = mask_ $ join $ atomically $ do
   let r = keyRegion k
   guardLive k
-  m_res <- lookup k <$> readTVar (resources r)
+  m_res <- List.lookup k <$> readTVar (resources r)
   case m_res of
     Nothing -> throwSTM NotFound
     Just c -> do
-      modifyTVar' (resources r) $ filter ((/= k) . fst)
+      modifyTVar' (resources r) $ List.filter ((/= k) . fst)
       writeTVar (keyFreed k) True
       return c
 
@@ -173,12 +183,12 @@ moveToSTM :: Key -> Region -> STM Key
 moveToSTM k r = do
   guardLive k
   guardOpen (keyRegion k)
-  m_res <- lookup k <$> readTVar (resources $ keyRegion k)
+  m_res <- List.lookup k <$> readTVar (resources $ keyRegion k)
   case m_res of
     Nothing -> throwSTM NotFound
     Just c -> do
       guardOpen r
-      modifyTVar' (resources $ keyRegion k) $ filter ((/= k) . fst)
+      modifyTVar' (resources $ keyRegion k) $ List.filter ((/= k) . fst)
       writeTVar (keyFreed k) True
       k' <- Key
          <$> readTVar (nextKey r)
