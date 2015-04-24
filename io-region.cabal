@@ -1,11 +1,11 @@
 name:                io-region
-version:             0.1.0
+version:             0.1.1
 synopsis:            Exception safe resource management with dynamic regions
 license:             BSD3
 license-file:        LICENSE
 author:              Yuras Shumovich
 maintainer:          shumovichy@gmail.com
-copyright:           Copyright (c) Yuras Shumovich 2014
+copyright:           Copyright (c) Yuras Shumovich 2015
 homepage:            https://github.com/Yuras/io-region/wiki
 category:            Control
 build-type:          Simple
@@ -21,6 +21,7 @@ description:
   can own other one.
   .
   The library doesn't pretend to solve double throw issue.
+extra-source-files:  changelog.md
 
 source-repository head
   type:                git
