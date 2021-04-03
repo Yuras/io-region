@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/Yuras/io-region.svg?branch=master)](https://travis-ci.org/Yuras/io-region)
+[![Haskell CI](https://github.com/Yuras/io-region/actions/workflows/build.yml/badge.svg)](https://github.com/Yuras/io-region/actions/workflows/build.yml)
 
 Exception safe resource management with dynamic regions.
 
