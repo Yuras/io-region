@@ -11,6 +11,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.IO.Region (region)
 import qualified Control.IO.Region as Region
+import qualified Control.IO.Region.Internal as Internal
 
 import Test.Hspec
 
@@ -41,7 +42,7 @@ main = hspec $ do
             r <- Region.open
             Region.close r
             Region.alloc_ r (return ()) (const $ return ())
-      test `shouldThrow` \e -> seq (e :: Region.AlreadyClosed) True
+      test `shouldThrow` \e -> seq (e :: Internal.AlreadyClosed) True
 
   describe "free" $ do
     it "should call cleanup action" $ do
@@ -59,7 +60,7 @@ main = hspec $ do
             (_, k) <- Region.alloc r (return ()) (const $ return ())
             Region.free k
             Region.free k
-      test `shouldThrow` \e -> seq (e :: Region.AlreadyFreed) True
+      test `shouldThrow` \e -> seq (e :: Internal.AlreadyFreed) True
 
   describe "region" $ do
     it "should free resources on exit" $ do
@@ -78,14 +79,14 @@ main = hspec $ do
             (_, k) <- Region.alloc r (return ()) (const $ return ())
             Region.close r
             Region.free k
-      test `shouldThrow` \e -> seq (e :: Region.AlreadyFreed) True
+      test `shouldThrow` \e -> seq (e :: Internal.AlreadyFreed) True
 
     it "should throw when called twice" $ do
       let test = do
             r <- Region.open
             Region.close r
             Region.close r
-      test `shouldThrow` \e -> seq (e :: Region.AlreadyClosed) True
+      test `shouldThrow` \e -> seq (e :: Internal.AlreadyClosed) True
 
   describe "moveTo" $ do
     it "should remove resource from the original region" $ do
