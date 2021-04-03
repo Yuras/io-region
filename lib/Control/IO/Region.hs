@@ -48,15 +48,24 @@ module Control.IO.Region
   alloc,
   alloc_,
   free,
-  moveToSTM,
   moveTo,
   defer
 )
 where
 
 import Control.Concurrent.STM
+import Control.Exception
 import Control.IO.Region.Internal
 import Control.Monad
+
+-- | Create new region. It will be automatically closed on exit
+region :: (Region -> IO a) -> IO a
+region use = mask $ \restore -> do
+  r <- open
+  result <- restore (use r)
+    `onExceptionEx` close r
+  close r
+  return result
 
 -- | The same as `alloc`, but doesn't return the key
 alloc_ :: Region -> IO a -> (a -> IO ()) -> IO a

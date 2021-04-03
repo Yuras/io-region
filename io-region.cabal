@@ -12,15 +12,13 @@ build-type:          Simple
 cabal-version:       >=1.10
 description:
   Region owns resources and automatically frees them on exit.
-  It is a plain old ADT, so it is possible to pass it to functions,
+  It is a plain old data type, so it is possible to pass it to functions,
   put into mutable references, store in regular data types.
   .
   Resources can be freed earler or transfered to other regions.
   .
   Region itself can be used as any other resource. E.g. one region
   can own other one.
-  .
-  The library doesn't pretend to solve double throw issue.
 extra-source-files:  changelog.md
 
 source-repository head

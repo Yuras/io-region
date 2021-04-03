@@ -3,25 +3,13 @@
 -- | These module exposes internals of the library
 
 module Control.IO.Region.Internal
-(
-  Region(..),
-  Key(..),
-  AlreadyClosed(..),
-  AlreadyFreed(..),
-  NotFound(..),
-  region,
-  open,
-  close,
-  alloc,
-  free,
-  moveToSTM
-)
 where
 
 import Prelude (($!), Enum(..))
 import Data.Typeable
 import Data.Bool
 import Data.Int
+import Data.Either
 import Data.Eq
 import Data.Function
 import qualified Data.List as List
@@ -68,10 +56,6 @@ data AlreadyFreed = AlreadyFreed
 
 instance Exception AlreadyFreed where
 
--- | Create new region. It will be automatically closed on exit
-region :: (Region -> IO a) -> IO a
-region = bracket open close
-
 -- | Open new region. Prefer `region` function.
 open :: IO Region
 open = Region
@@ -79,15 +63,13 @@ open = Region
      <*> newTVarIO False
      <*> newTVarIO 1
 
--- | Close the region. You probably should called it
--- when async exceptions are masked. Prefer `region` function.
--- It is error to close region twice.
+-- | Close the region. Prefer `region` function.
+-- It is an error to close region twice.
 --
--- In case of exception inside any cleanup handler, other handlers will be
--- called anyway. The last exception will be rethrown (that matches the
--- behavior of `Control.Exception.bracket`.)
+-- When `close` fails for any reason, the region is guaranteed to be closed
+-- and all cleanup actions are called.
 close :: Region -> IO ()
-close r = do
+close r = mask_ $ do
   ress <- uninterruptibleMask_ $ atomically $ do
     guardOpen r
     ress <- readTVar (resources r)
@@ -99,7 +81,34 @@ close r = do
   go ress
   where
   go [] = return $! ()
-  go (res:ress) = res `finally` go ress
+  go (res:ress) = do
+    res `onExceptionEx` go ress
+    go ress
+
+-- | Extended version of `onException`, which ignores synchronous
+-- exceptions from the handler.
+onExceptionEx :: IO a -> IO b -> IO a
+onExceptionEx io h = mask $ \restore ->
+  -- mask above is necessary to make sure asynchronous exception
+  -- won't appear after catching exception, but before handler is executed
+  restore io `catch` \e -> do
+    case fromException e of
+      Just SomeAsyncException{} -> do
+        -- we are handling asynchronous exception, and we don't want another
+        -- one to appear, so mask them hard
+        ignoreExceptions $ uninterruptibleMask_ h
+        throwIO e
+      Nothing -> ignoreExceptions h >> throwIO e
+
+-- | Ignore any synchronous exception from the action
+ignoreExceptions :: IO a -> IO ()
+ignoreExceptions io = mask $ \restore -> do
+  res <- try (restore io)
+  case res of
+    Left e -> case fromException e of
+      Just SomeAsyncException{} -> throwIO e
+      Nothing -> return $! ()
+    Right _ -> return $! ()
 
 -- | Allocate resource inside the region
 alloc :: Region
