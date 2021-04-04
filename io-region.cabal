@@ -6,7 +6,7 @@ license-file:        LICENSE
 author:              Yuras Shumovich
 maintainer:          shumovichy@gmail.com
 copyright:           Copyright (c) Yuras Shumovich 2015
-homepage:            https://github.com/Yuras/io-region/wiki
+homepage:            https://github.com/Yuras/io-region
 category:            Control
 build-type:          Simple
 cabal-version:       >=1.10

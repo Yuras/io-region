@@ -84,6 +84,24 @@ main = hspec $ do
         res <- liftIO $ readIORef ref
         res `shouldBe` True
 
+    context "when region body throws asynchronous exception" $ do
+      it "should rethrow one" $ do
+        let action = Region.region $ \r -> do
+              Region.alloc_ r
+                (return ())
+                (const $ fail "no")
+              throwIO UserInterrupt
+        action `shouldThrow` \UserInterrupt -> True
+
+    context "when cleanup throws asynchronous exception" $ do
+      it "should rethrow one" $ do
+        let action = Region.region $ \r -> do
+              Region.alloc_ r
+                (return ())
+                (const $ throwIO UserInterrupt)
+              fail "no"
+        action `shouldThrow` \UserInterrupt -> True
+
   describe "close" $ do
     it "should free resources" $ do
       let test = do

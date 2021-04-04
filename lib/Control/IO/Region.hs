@@ -59,6 +59,14 @@ import Control.IO.Region.Internal
 import Control.Monad
 
 -- | Create new region. It will be automatically closed on exit
+--
+-- If the action inside the region or any of cleanup actions throws, then
+-- the exception will be rethrown.
+--
+-- If more then one exception occurs, then the one from the body is preferred
+-- unless there was asynchronous exception from cleanup action.
+-- Other synchronous exceptions are ignored.
+-- Asynchronous exception are never ignored.
 region :: (Region -> IO a) -> IO a
 region use = mask $ \restore -> do
   r <- open
@@ -71,7 +79,9 @@ region use = mask $ \restore -> do
 alloc_ :: Region -> IO a -> (a -> IO ()) -> IO a
 alloc_ r a f = fst <$> alloc r a f
 
--- | Move resource to other region. See also `moveToSTM`
+-- | Move resource to other region
+--
+-- The old key becomes invalid and should not be used
 moveTo :: Key -> Region -> IO Key
 moveTo k = atomically . moveToSTM k
 

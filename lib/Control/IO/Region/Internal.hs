@@ -54,17 +54,27 @@ data AlreadyFreed = AlreadyFreed
 
 instance Exception AlreadyFreed where
 
--- | Open new region. Prefer `region` function.
+-- | Open new region. Prefer `Control.IO.Region.region` function.
 open :: IO Region
 open = Region
      <$> newTVarIO []
      <*> newTVarIO False
 
--- | Close the region. Prefer `region` function.
+-- | Close the region. Prefer `Control.IO.Region.region` function.
+--
 -- It is an error to close region twice.
 --
 -- When `close` fails for any reason, the region is guaranteed to be closed
 -- and all cleanup actions are called.
+--
+-- It will never ignore asynchronous exception in the cleanup action.
+--
+-- When exception occurs in one of the cleanup actions, `close` itself will
+-- rethrow the exception. If more then one cleanup action throws synchronous
+-- exception, then one of them is rethrown, others are ignored. If cleanup
+-- action throws asynchronous exception, then subsequent cleanups are
+-- executed in masking state `MaskedUninterruptible` to make sure other
+-- asynchronous exception won't appear.
 close :: Region -> IO ()
 close r = mask_ $ do
   ress <- uninterruptibleMask_ $ atomically $ do
@@ -108,6 +118,17 @@ ignoreExceptions io = mask $ \restore -> do
     Right _ -> return $! ()
 
 -- | Allocate resource inside the region
+--
+-- The cleanup action should guarantee that the resource will be deallocated
+-- even if it fails for any reason, including the case when it's interrupted
+-- with asynchronous exception.
+--
+-- Cleanup action might expect to be called with asynchronous exceptions
+-- masked, but the exact masking state, `MaskedInterruptible` or
+-- `MaskedUninterruptible`, is not specified.
+--
+-- Cleanup should never throw asynchronous exception under
+-- `MaskedUninterruptible`.
 alloc :: Region
       -> IO a         -- ^ action to allocate resource
       -> (a -> IO ()) -- ^ action to cleanup resource
