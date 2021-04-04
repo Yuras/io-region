@@ -25,14 +25,12 @@ import Text.Show
 -- | Region owns resources and frees them on close
 data Region = Region {
   resources :: TVar [(Key, IO ())],
-  closed :: TVar Bool,
-  nextKey :: TVar Int
+  closed :: TVar Bool
   }
   deriving Eq
 
 -- | Each resource is identified by unique key
 data Key = Key {
-  keyIndex :: Int,
   keyRegion :: Region,
   keyFreed :: TVar Bool
   }
@@ -61,7 +59,6 @@ open :: IO Region
 open = Region
      <$> newTVarIO []
      <*> newTVarIO False
-     <*> newTVarIO 1
 
 -- | Close the region. Prefer `region` function.
 -- It is an error to close region twice.
@@ -120,10 +117,8 @@ alloc r acquire cleanup = mask_ $ do
   uninterruptibleMask_ $ atomically $ do
     guardOpen r
     k <- Key
-      <$> readTVar (nextKey r)
-      <*> pure r
+      <$> pure r
       <*> newTVar False
-    modifyTVar' (nextKey r) succ
     modifyTVar' (resources r) ((k, cleanup res) :)
     return (res, k)
 
@@ -156,10 +151,8 @@ moveToSTM k r = do
       modifyTVar' (resources $ keyRegion k) $ List.filter ((/= k) . fst)
       writeTVar (keyFreed k) True
       k' <- Key
-         <$> readTVar (nextKey r)
-         <*> pure r
+         <$> pure r
          <*> newTVar False
-      modifyTVar' (nextKey r) succ
       modifyTVar' (resources r) ((k', c) :)
       return k'
 
