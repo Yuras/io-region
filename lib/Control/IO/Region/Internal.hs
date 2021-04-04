@@ -95,17 +95,14 @@ close r = mask_ $ do
 -- | Extended version of `onException`, which ignores synchronous
 -- exceptions from the handler.
 onExceptionEx :: IO a -> IO b -> IO a
-onExceptionEx io h = mask $ \restore ->
-  -- mask above is necessary to make sure asynchronous exception
-  -- won't appear after catching exception, but before handler is executed
-  restore io `catch` \e -> do
-    case fromException e of
-      Just SomeAsyncException{} -> do
-        -- we are handling asynchronous exception, and we don't want another
-        -- one to appear, so mask them hard
-        ignoreExceptions $ uninterruptibleMask_ h
-        throwIO e
-      Nothing -> ignoreExceptions h >> throwIO e
+onExceptionEx io h = io `catch` \e -> do
+  case fromException e of
+    Just SomeAsyncException{} -> do
+      -- we are handling asynchronous exception, and we don't want another
+      -- one to appear, so mask them hard
+      ignoreExceptions $ uninterruptibleMask_ h
+      throwIO e
+    Nothing -> ignoreExceptions h >> throwIO e
 
 -- | Ignore any synchronous exception from the action
 ignoreExceptions :: IO a -> IO ()
