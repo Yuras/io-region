@@ -32,7 +32,7 @@ jobs:
         cache-name: cache-cabal
       with:
         path: ~/.cabal
-        key: ${{ runner.os }}-build-${{ matrix.ghc }}-${{ env.cache-name }}-${{ hashFiles('**/*.cabal') }}-${{ hashFiles('.github/workflows/build.yml') }}
+        key: ${{ runner.os }}-build-${{ matrix.ghc }}-${{ env.cache-name }}-${{ hashFiles('**/*.cabal', '/.github/workflows/*.yml') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ matrix.ghc }}-${{ env.cache-name }}-
           ${{ runner.os }}-build-${{ matrix.ghc }}-
@@ -55,6 +55,7 @@ jobs:
       with:
         build-tool: 'cabal'
         test-suite: 'test'
+        excludes: Main
     - name: Upload coverate
       uses: codecov/codecov-action@v1
 
