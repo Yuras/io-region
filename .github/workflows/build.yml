@@ -25,9 +25,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-haskell@v1
-      with:
-        ghc-version: ${{matrix.ghc}}
 
     - name: Cache
       uses: actions/cache@v1
@@ -39,6 +36,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-build-${{ matrix.ghc }}-${{ env.cache-name }}-
           ${{ runner.os }}-build-${{ matrix.ghc }}-
+
+    - uses: actions/setup-haskell@v1
+      with:
+        ghc-version: ${{matrix.ghc}}
 
     - name: Install dependencies
       run: |
