@@ -1,3 +1,7 @@
+0.2
+
+* Change exception handling semantics to make sure we never ignore
+asynchronous exceptions
 
 0.1.1
 
