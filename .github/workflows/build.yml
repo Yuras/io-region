@@ -52,8 +52,7 @@ jobs:
     - name: Coverate
       uses: 8c6794b6/hpc-codecov-action@v4
       with:
-        build-tool: 'cabal'
-        test-suite: 'test'
+        target: 'cabal:test'
         excludes: Main
     - name: Upload coverate
       uses: codecov/codecov-action@v5
