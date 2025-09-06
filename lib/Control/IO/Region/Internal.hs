@@ -5,7 +5,7 @@
 module Control.IO.Region.Internal
 where
 
-import Prelude (($!), Enum(..))
+--import Prelude (($!), Enum(..))
 import Data.Typeable
 import Data.Bool
 import Data.Int
@@ -28,6 +28,11 @@ data Region = Region {
   closed :: TVar Bool
   }
   deriving Eq
+
+data SomeAsyncException = SomeAsyncException
+  deriving (Show)
+
+instance Exception SomeAsyncException where
 
 -- | Each resource is identified by unique key
 data Key = Key {
@@ -139,6 +144,13 @@ alloc r acquire cleanup = mask_ $ do
       <*> newTVar False
     modifyTVar' (resources r) ((k, cleanup res) :)
     return (res, k)
+
+modifyTVar' :: TVar a -> (a -> a) -> STM ()
+modifyTVar' v f = do
+  x <- readTVar v
+  writeTVar v $! f x
+
+throwSTM e = error $ show e
 
 -- | Free the resource earlier then it's region will be closed.
 -- It will be removed from the region immediately.
