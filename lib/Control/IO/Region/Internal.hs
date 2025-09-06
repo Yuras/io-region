@@ -6,7 +6,7 @@
 module Control.IO.Region.Internal
 where
 
---import Prelude (($!), Enum(..))
+import Prelude (($!), Enum(..))
 import Data.Typeable
 import Data.Bool
 import Data.Int
@@ -24,6 +24,8 @@ import System.IO
 import Text.Show
 
 #ifdef __MHS__
+import Prelude (error, [](..))
+
 data SomeAsyncException = SomeAsyncException
   deriving (Show)
 
