@@ -56,4 +56,6 @@ jobs:
         excludes: Main
     - name: Upload coverate
       uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
