@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
 -- | These module exposes internals of the library
@@ -22,17 +23,26 @@ import Control.Concurrent.STM
 import System.IO
 import Text.Show
 
+#ifdef __MHS__
+data SomeAsyncException = SomeAsyncException
+  deriving (Show)
+
+instance Exception SomeAsyncException where
+
+modifyTVar' :: TVar a -> (a -> a) -> STM ()
+modifyTVar' v f = do
+  x <- readTVar v
+  writeTVar v $! f x
+
+throwSTM e = error $ show e
+#endif
+
 -- | Region owns resources and frees them on close
 data Region = Region {
   resources :: TVar [(Key, IO ())],
   closed :: TVar Bool
   }
   deriving Eq
-
-data SomeAsyncException = SomeAsyncException
-  deriving (Show)
-
-instance Exception SomeAsyncException where
 
 -- | Each resource is identified by unique key
 data Key = Key {
@@ -144,13 +154,6 @@ alloc r acquire cleanup = mask_ $ do
       <*> newTVar False
     modifyTVar' (resources r) ((k, cleanup res) :)
     return (res, k)
-
-modifyTVar' :: TVar a -> (a -> a) -> STM ()
-modifyTVar' v f = do
-  x <- readTVar v
-  writeTVar v $! f x
-
-throwSTM e = error $ show e
 
 -- | Free the resource earlier then it's region will be closed.
 -- It will be removed from the region immediately.
