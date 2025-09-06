@@ -50,11 +50,11 @@ jobs:
       run: cabal test --enable-coverage all
 
     - name: Coverate
-      uses: 8c6794b6/hpc-codecov-action@v1
+      uses: 8c6794b6/hpc-codecov-action@v4
       with:
         build-tool: 'cabal'
         test-suite: 'test'
         excludes: Main
     - name: Upload coverate
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v5
 
