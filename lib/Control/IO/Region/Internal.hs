@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
 -- | These module exposes internals of the library
@@ -21,6 +22,10 @@ import Control.Exception
 import Control.Concurrent.STM
 import System.IO
 import Text.Show
+
+#ifdef __MHS__
+import Prelude ([](..))
+#endif
 
 -- | Region owns resources and frees them on close
 data Region = Region {
