@@ -24,19 +24,7 @@ import System.IO
 import Text.Show
 
 #ifdef __MHS__
-import Prelude (error, [](..))
-
-data SomeAsyncException = SomeAsyncException
-  deriving (Show)
-
-instance Exception SomeAsyncException where
-
-modifyTVar' :: TVar a -> (a -> a) -> STM ()
-modifyTVar' v f = do
-  x <- readTVar v
-  writeTVar v $! f x
-
-throwSTM e = error $ show e
+import Prelude ([](..))
 #endif
 
 -- | Region owns resources and frees them on close
