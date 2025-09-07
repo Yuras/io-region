@@ -5,3 +5,7 @@
 Exception safe resource management with dynamic regions.
 
 See [wiki](https://github.com/Yuras/io-region/wiki)
+
+# MicroHs
+The code should compile and work with MicroHs.
+To run the testsuit use `mhs -iportable_hspec -ilib -r test/test.hs`

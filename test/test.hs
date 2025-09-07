@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 
 module Main
 (
@@ -223,3 +224,10 @@ main = hspec $ do
         void $ Region.defer r (writeIORef ref True)
       res <- liftIO $ readIORef ref
       res `shouldBe` True
+
+#ifdef __MHS__
+modifyIORef' :: IORef a -> (a -> a) -> IO ()
+modifyIORef' r f = do
+  a <- readIORef r
+  writeIORef r $! f a
+#endif
